@@ -5,7 +5,6 @@ mod display;
 
 const MAX_LIMBS: usize = 6;
 const WORDS_LIST: &[&str] = &["banana", "flute", "monkey", "bicycle"];
-
 // TODO: use a txt files as the word list
 
 enum GuessResult {
@@ -27,26 +26,25 @@ struct Game<'a> {
 impl<'a> Game<'a> {
     fn register_guess(&mut self, guess: char) -> GuessResult {
         if self.guesses.contains(&guess) {
-            GuessResult::AlreadyGuessed(guess)
+            return GuessResult::AlreadyGuessed(guess);
+        }
+        let found_indices: Vec<_> = self
+            .secret_word
+            .char_indices()
+            .filter(|(_, c)| c == &guess)
+            .map(|(i, c)| self.public_word[i] = c)
+            .collect();
+        let num_matches = found_indices.len();
+        if self.public_word.iter().collect::<String>() == self.secret_word {
+            GuessResult::GameWon
+        } else if num_matches > 0 {
+            GuessResult::SuccessfulGuess(num_matches)
         } else {
-            let found_indices: Vec<_> = self
-                .secret_word
-                .char_indices()
-                .filter(|(_, c)| c == &guess)
-                .map(|(i, c)| self.public_word[i] = c)
-                .collect();
-            let num_matches = found_indices.len();
-            if self.public_word.iter().collect::<String>() == self.secret_word {
-                GuessResult::GameWon
-            } else if num_matches > 0 {
-                GuessResult::SuccessfulGuess(num_matches)
-            } else if self.limbs == MAX_LIMBS - 1 {
-                self.limbs += 1;
-                GuessResult::OutOfTurns
-            } else {
-                self.limbs += 1;
-                self.guesses.push(guess);
-                GuessResult::FailedGuess
+            self.limbs += 1;
+            self.guesses.push(guess);
+            match self.limbs {
+                MAX_LIMBS => GuessResult::OutOfTurns,
+                _ => GuessResult::FailedGuess,
             }
         }
     }
