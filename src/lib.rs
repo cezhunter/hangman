@@ -25,7 +25,7 @@ struct Game<'a> {
 
 impl<'a> Game<'a> {
     fn register_guess(&mut self, guess: char) -> GuessResult {
-        if self.guesses.contains(&guess) {
+        if self.guesses.contains(&guess) || self.public_word.contains(&guess) {
             return GuessResult::AlreadyGuessed(guess);
         }
         let found_indices: Vec<_> = self
@@ -86,7 +86,7 @@ pub fn start_game() {
                 break;
             }
             GuessResult::OutOfTurns => {
-                println!("game over.");
+                println!("game over. word was {}", game.secret_word);
                 break;
             }
         }
