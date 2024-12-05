@@ -20,5 +20,5 @@ pub fn show_game(game: &Game) {
         .join(" ");
     println!("Guesses: {}", guesses_str);
     println!("{}", ascii::HANGMAN_ASCII[game.limbs]); //  padding doesn't work here
-    println!("{:^16}", word_str);
+    println!("{:^19}\n", word_str);
 }

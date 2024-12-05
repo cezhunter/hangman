@@ -9,10 +9,12 @@ const WORDS_LIST: &[&str] = &["banana", "flute", "monkey", "bicycle"];
 // TODO: use a txt files as the word list
 
 enum GuessResult {
+    // might need to associate with struct
     AlreadyGuessed(char),
     SuccessfulGuess(usize),
     FailedGuess,
     OutOfTurns,
+    GameWon,
 }
 
 struct Game<'a> {
@@ -34,9 +36,12 @@ impl<'a> Game<'a> {
                 .map(|(i, c)| self.public_word[i] = c)
                 .collect();
             let num_matches = found_indices.len();
-            if num_matches > 0 {
+            if self.public_word.iter().collect::<String>() == self.secret_word {
+                GuessResult::GameWon
+            } else if num_matches > 0 {
                 GuessResult::SuccessfulGuess(num_matches)
-            } else if self.limbs == MAX_LIMBS {
+            } else if self.limbs == MAX_LIMBS - 1 {
+                self.limbs += 1;
                 GuessResult::OutOfTurns
             } else {
                 self.limbs += 1;
@@ -69,6 +74,7 @@ pub fn start_game() {
             Err(_) => continue,
         };
         if !guess.is_alphabetic() {
+            // really should be part of a parsing func
             continue;
         }
         let res: GuessResult = game.register_guess(guess);
@@ -77,15 +83,14 @@ pub fn start_game() {
             GuessResult::AlreadyGuessed(c) => println!("already guessed {}", c),
             GuessResult::SuccessfulGuess(n) => println!("found {} matching", n),
             GuessResult::FailedGuess => println!("nope!"),
+            GuessResult::GameWon => {
+                println!("Congrats! You won!");
+                break;
+            }
             GuessResult::OutOfTurns => {
                 println!("game over.");
                 break;
             }
         }
     }
-    // pick a random word
-    // loop
-    // get guess
-    // display
-    // if out of turns, finish
 }
