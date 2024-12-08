@@ -36,16 +36,16 @@ impl<'a> Game<'a> {
             .collect();
         let num_matches = found_indices.len();
         if self.public_word.iter().collect::<String>() == self.secret_word {
-            GuessResult::GameWon
+            return GuessResult::GameWon;
         } else if num_matches > 0 {
-            GuessResult::SuccessfulGuess(num_matches)
+            return GuessResult::SuccessfulGuess(num_matches);
+        }
+        self.limbs += 1;
+        self.guesses.push(guess);
+        if self.limbs >= MAX_LIMBS {
+            GuessResult::OutOfTurns
         } else {
-            self.limbs += 1;
-            self.guesses.push(guess);
-            match self.limbs {
-                MAX_LIMBS => GuessResult::OutOfTurns,
-                _ => GuessResult::FailedGuess,
-            }
+            GuessResult::FailedGuess
         }
     }
 }
