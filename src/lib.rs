@@ -1,11 +1,10 @@
 use rand::Rng;
+use std::fs;
 use std::io;
 
 mod display;
 
 const MAX_LIMBS: usize = 6;
-const WORDS_LIST: &[&str] = &["banana", "flute", "monkey", "bicycle"];
-// TODO: use a txt files as the word list
 
 enum GuessResult {
     // might need to associate with struct
@@ -17,7 +16,7 @@ enum GuessResult {
 }
 
 struct Game<'a> {
-    secret_word: &'a str, // do we need to use &str?
+    secret_word: &'a String,
     guesses: Vec<char>,
     public_word: Vec<char>,
     limbs: usize,
@@ -35,7 +34,7 @@ impl<'a> Game<'a> {
             .map(|(i, c)| self.public_word[i] = c)
             .collect();
         let num_matches = found_indices.len();
-        if self.public_word.iter().collect::<String>() == self.secret_word {
+        if self.public_word.iter().collect::<String>() == *self.secret_word {
             return GuessResult::GameWon;
         } else if num_matches > 0 {
             return GuessResult::SuccessfulGuess(num_matches);
@@ -50,9 +49,19 @@ impl<'a> Game<'a> {
     }
 }
 
+fn read_words(file_path: &str) -> Vec<String> {
+    let words = fs::read_to_string(file_path)
+        .unwrap()
+        .split_whitespace()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    words
+}
+
 pub fn start_game() {
-    let rand_num = rand::thread_rng().gen_range(0..WORDS_LIST.len());
-    let secret_word = WORDS_LIST[rand_num];
+    let words = read_words("src/words.txt");
+    let rand_num = rand::thread_rng().gen_range(0..words.len());
+    let secret_word = &words[rand_num];
     let mut game = Game {
         secret_word,
         guesses: Vec::new(),
