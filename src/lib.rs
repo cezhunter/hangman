@@ -4,9 +4,6 @@ use std::io;
 
 mod ascii;
 
-const WELCOME_MESSAGE: &str = "Welcome to Hangman! You know the rules!";
-const GUESS_MESSAGE: &str = "Please enter your guess.";
-
 enum GameStatus {
     AlreadyGuessed(char),
     SuccessfulGuess(usize),
@@ -101,10 +98,10 @@ pub fn start_game() {
         limbs: 0,
         status: GameStatus::Pending,
     };
-    println!("{}", WELCOME_MESSAGE);
+    println!("{}", "Welcome to Hangman! You know the rules!");
     show_game(&game);
     loop {
-        println!("{}", GUESS_MESSAGE);
+        println!("{}", "Please enter your guess.");
         let guess = match get_guess() {
             Some(g) => g,
             None => continue,
