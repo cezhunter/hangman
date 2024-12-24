@@ -37,24 +37,35 @@ impl<'a> Game<'a> {
             self.status = GameStatus::GameWon;
         } else if num_matches > 0 {
             self.status = GameStatus::SuccessfulGuess(num_matches);
-        }
-        self.limbs += 1;
-        self.guesses.push(guess);
-        if self.limbs >= 6 {
-            self.status = GameStatus::OutOfTurns;
         } else {
-            self.status = GameStatus::FailedGuess;
+            self.limbs += 1;
+            self.guesses.push(guess);
+            if self.limbs >= 6 {
+                self.status = GameStatus::OutOfTurns;
+            } else {
+                self.status = GameStatus::FailedGuess;
+            }
         }
     }
 }
 
 fn read_words(file_path: &str) -> Vec<String> {
-    let words = fs::read_to_string(file_path)
+    fs::read_to_string(file_path)
         .unwrap()
         .split_whitespace()
         .map(|x| x.to_string())
-        .collect::<Vec<String>>();
-    words
+        .collect::<Vec<String>>()
+}
+
+fn get_guess() -> Option<char> {
+    let mut guess = String::new(); // this code is boilerplate from the docs, could clean up
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("failed to read guess");
+    match guess.trim().parse::<char>() {
+        Ok(g) if g.is_alphabetic() => Some(g),
+        _ => None,
+    }
 }
 
 pub fn start_game() {
@@ -72,18 +83,10 @@ pub fn start_game() {
     display::show_game(&game);
     loop {
         println!("{}", display::GUESS_MESSAGE);
-        let mut guess = String::new(); // this code is boilerplate from the docs, could clean up
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("failed to read guess");
-        let guess: char = match guess.trim().parse() {
-            Ok(g) => g,
-            Err(_) => continue,
+        let guess = match get_guess() {
+            Some(g) => g,
+            None => continue,
         };
-        if !guess.is_alphabetic() {
-            // really should be part of a parsing func
-            continue;
-        }
         game.register_guess(guess);
         display::show_game(&game);
         match game.status {
