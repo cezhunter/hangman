@@ -63,9 +63,12 @@ fn vec_to_string(vec: &Vec<char>) -> String {
 fn show_game(game: &Game) {
     let guesses_string = vec_to_string(&game.guesses);
     let word_string = vec_to_string(&game.public_word);
-    println!("Guesses: {}", guesses_string);
-    println!("{}", ascii::HANGMAN_ASCII[game.limbs]); //  padding doesn't work here
-    println!("{:^19}\n", word_string);
+    println!(
+        "Guesses: {}\n{}\n{:^19}\n",
+        guesses_string,
+        ascii::HANGMAN_ASCII[game.limbs],
+        word_string
+    );
 }
 
 fn read_words(file_path: &str) -> Vec<String> {
