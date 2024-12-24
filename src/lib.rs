@@ -4,15 +4,13 @@ use std::io;
 
 mod display;
 
-const MAX_LIMBS: usize = 6;
-
-enum GuessResult {
-    // might need to associate with struct
+enum GameStatus {
     AlreadyGuessed(char),
     SuccessfulGuess(usize),
     FailedGuess,
     OutOfTurns,
     GameWon,
+    Pending,
 }
 
 struct Game<'a> {
@@ -20,12 +18,13 @@ struct Game<'a> {
     guesses: Vec<char>,
     public_word: Vec<char>,
     limbs: usize,
+    status: GameStatus,
 }
 
 impl<'a> Game<'a> {
-    fn register_guess(&mut self, guess: char) -> GuessResult {
+    fn register_guess(&mut self, guess: char) {
         if self.guesses.contains(&guess) || self.public_word.contains(&guess) {
-            return GuessResult::AlreadyGuessed(guess);
+            self.status = GameStatus::AlreadyGuessed(guess);
         }
         let found_indices: Vec<_> = self
             .secret_word
@@ -35,16 +34,16 @@ impl<'a> Game<'a> {
             .collect();
         let num_matches = found_indices.len();
         if self.public_word.iter().collect::<String>() == *self.secret_word {
-            return GuessResult::GameWon;
+            self.status = GameStatus::GameWon;
         } else if num_matches > 0 {
-            return GuessResult::SuccessfulGuess(num_matches);
+            self.status = GameStatus::SuccessfulGuess(num_matches);
         }
         self.limbs += 1;
         self.guesses.push(guess);
-        if self.limbs >= MAX_LIMBS {
-            GuessResult::OutOfTurns
+        if self.limbs >= 6 {
+            self.status = GameStatus::OutOfTurns;
         } else {
-            GuessResult::FailedGuess
+            self.status = GameStatus::FailedGuess;
         }
     }
 }
@@ -67,6 +66,7 @@ pub fn start_game() {
         guesses: Vec::new(),
         public_word: vec!['_'; secret_word.len()],
         limbs: 0,
+        status: GameStatus::Pending,
     };
     println!("{}", display::WELCOME_MESSAGE);
     display::show_game(&game);
@@ -84,20 +84,21 @@ pub fn start_game() {
             // really should be part of a parsing func
             continue;
         }
-        let res: GuessResult = game.register_guess(guess);
+        game.register_guess(guess);
         display::show_game(&game);
-        match res {
-            GuessResult::AlreadyGuessed(c) => println!("already guessed {}", c),
-            GuessResult::SuccessfulGuess(n) => println!("found {} matching", n),
-            GuessResult::FailedGuess => println!("nope!"),
-            GuessResult::GameWon => {
+        match game.status {
+            GameStatus::AlreadyGuessed(c) => println!("already guessed {}", c),
+            GameStatus::SuccessfulGuess(n) => println!("found {} matching", n),
+            GameStatus::FailedGuess => println!("nope!"),
+            GameStatus::GameWon => {
                 println!("Congrats! You won!");
                 break;
             }
-            GuessResult::OutOfTurns => {
+            GameStatus::OutOfTurns => {
                 println!("game over. word was {}", game.secret_word);
                 break;
             }
+            GameStatus::Pending => {}
         }
     }
 }
