@@ -2,7 +2,10 @@ use rand::Rng;
 use std::fs;
 use std::io;
 
-mod display;
+mod ascii;
+
+const WELCOME_MESSAGE: &str = "Welcome to Hangman! You know the rules!";
+const GUESS_MESSAGE: &str = "Please enter your guess.";
 
 enum GameStatus {
     AlreadyGuessed(char),
@@ -50,6 +53,21 @@ impl<'a> Game<'a> {
     }
 }
 
+fn vec_to_string(vec: &Vec<char>) -> String {
+    vec.iter()
+        .map(|c| c.to_string())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+fn show_game(game: &Game) {
+    let guesses_string = vec_to_string(&game.guesses);
+    let word_string = vec_to_string(&game.public_word);
+    println!("Guesses: {}", guesses_string);
+    println!("{}", ascii::HANGMAN_ASCII[game.limbs]); //  padding doesn't work here
+    println!("{:^19}\n", word_string);
+}
+
 fn read_words(file_path: &str) -> Vec<String> {
     fs::read_to_string(file_path)
         .unwrap()
@@ -80,16 +98,16 @@ pub fn start_game() {
         limbs: 0,
         status: GameStatus::Pending,
     };
-    println!("{}", display::WELCOME_MESSAGE);
-    display::show_game(&game);
+    println!("{}", WELCOME_MESSAGE);
+    show_game(&game);
     loop {
-        println!("{}", display::GUESS_MESSAGE);
+        println!("{}", GUESS_MESSAGE);
         let guess = match get_guess() {
             Some(g) => g,
             None => continue,
         };
         game.register_guess(guess);
-        display::show_game(&game);
+        show_game(&game);
         match game.status {
             GameStatus::AlreadyGuessed(c) => println!("already guessed {}", c),
             GameStatus::SuccessfulGuess(n) => println!("found {} matching", n),
