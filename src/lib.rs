@@ -8,7 +8,7 @@ mod ascii;
 enum GameStatus {
     AlreadyGuessed(char),
     SuccessfulGuess(usize),
-    FailedGuess,
+    FailedGuess(char),
     OutOfTurns,
     GameWon,
     Pending,
@@ -45,7 +45,7 @@ impl<'a> Game<'a> {
             if self.limbs >= 6 {
                 self.status = GameStatus::OutOfTurns;
             } else {
-                self.status = GameStatus::FailedGuess;
+                self.status = GameStatus::FailedGuess(guess);
             }
         }
     }
@@ -62,7 +62,7 @@ fn show_game(game: &Game) {
     let message = match game.status {
         GameStatus::AlreadyGuessed(c) => format!("already guessed {}", c),
         GameStatus::SuccessfulGuess(n) => format!("found {} matching", n),
-        GameStatus::FailedGuess => String::from("Sorry, not correct"),
+        GameStatus::FailedGuess(c) => format!("Sorry, {} is not correct", c),
         GameStatus::GameWon => String::from("Congrats! You won!"),
         GameStatus::OutOfTurns => format!("GAME OVER. The word was {}", game.secret_word),
         GameStatus::Pending => String::new(),
