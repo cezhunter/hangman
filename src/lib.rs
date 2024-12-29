@@ -1,5 +1,4 @@
 use rand::Rng;
-// use std::fmt;
 use std::fs;
 use std::io;
 
