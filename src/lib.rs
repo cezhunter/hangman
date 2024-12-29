@@ -1,4 +1,5 @@
 use rand::Rng;
+// use std::fmt;
 use std::fs;
 use std::io;
 
@@ -58,13 +59,22 @@ fn vec_to_string(vec: &Vec<char>) -> String {
 }
 
 fn show_game(game: &Game) {
+    let message = match game.status {
+        GameStatus::AlreadyGuessed(c) => format!("already guessed {}", c),
+        GameStatus::SuccessfulGuess(n) => format!("found {} matching", n),
+        GameStatus::FailedGuess => String::from("Sorry, not correct"),
+        GameStatus::GameWon => String::from("Congrats! You won!"),
+        GameStatus::OutOfTurns => format!("GAME OVER. The word was {}", game.secret_word),
+        GameStatus::Pending => String::new(),
+    };
     let guesses_string = vec_to_string(&game.guesses);
     let word_string = vec_to_string(&game.public_word);
     println!(
-        "Guesses: {}\n{}\n{:^19}\n",
+        "Guesses: {}\n{}\n{:^19}\n{}\n",
         guesses_string,
         ascii::HANGMAN_ASCII[game.limbs],
-        word_string
+        word_string,
+        message
     );
 }
 
@@ -77,7 +87,7 @@ fn read_words(file_path: &str) -> Vec<String> {
 }
 
 fn get_guess() -> Option<char> {
-    let mut guess = String::new(); // this code is boilerplate from the docs, could clean up
+    let mut guess = String::new();
     io::stdin()
         .read_line(&mut guess)
         .expect("failed to read guess");
@@ -108,19 +118,9 @@ pub fn start_game() {
         };
         game.register_guess(guess);
         show_game(&game);
-        match game.status {
-            GameStatus::AlreadyGuessed(c) => println!("already guessed {}", c),
-            GameStatus::SuccessfulGuess(n) => println!("found {} matching", n),
-            GameStatus::FailedGuess => println!("nope!"),
-            GameStatus::GameWon => {
-                println!("Congrats! You won!");
-                break;
-            }
-            GameStatus::OutOfTurns => {
-                println!("GAME OVER. The word was {}", game.secret_word);
-                break;
-            }
-            GameStatus::Pending => {}
+        match &game.status {
+            GameStatus::GameWon | GameStatus::OutOfTurns => break,
+            _ => {}
         }
     }
 }
