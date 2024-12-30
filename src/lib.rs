@@ -22,6 +22,15 @@ struct Game<'a> {
 }
 
 impl<'a> Game<'a> {
+    fn new(secret_word: &'a String) -> Self {
+        Self {
+            secret_word,
+            guesses: Vec::new(),
+            public_word: vec!['_'; secret_word.len()],
+            limbs: 0,
+            status: GameStatus::Pending,
+        }
+    }
     fn register_guess(&mut self, guess: char) {
         if self.guesses.contains(&guess) || self.public_word.contains(&guess) {
             self.status = GameStatus::AlreadyGuessed(guess);
@@ -100,13 +109,7 @@ pub fn start_game() {
     let words = read_words("src/words.txt");
     let rand_num = rand::thread_rng().gen_range(0..words.len());
     let secret_word = &words[rand_num];
-    let mut game = Game {
-        secret_word,
-        guesses: Vec::new(),
-        public_word: vec!['_'; secret_word.len()],
-        limbs: 0,
-        status: GameStatus::Pending,
-    };
+    let mut game = Game::new(secret_word);
     println!("{}", "Welcome to Hangman! You know the rules!");
     show_game(&game);
     loop {
