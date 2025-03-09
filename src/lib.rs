@@ -112,18 +112,17 @@ pub fn start_game() {
     let secret_word = &words[rand_num];
     let mut game = Game::new(secret_word);
     println!("Welcome to Hangman! You know the rules!");
-    game.show_game();
     loop {
+        game.show_game();
+        match &game.status {
+            GameStatus::GameWon | GameStatus::OutOfTurns => break,
+            _ => {}
+        }
         println!("Please enter your guess.");
         let guess = match get_guess() {
             Some(g) => g,
             None => continue,
         };
         game.register_guess(guess);
-        game.show_game();
-        match &game.status {
-            GameStatus::GameWon | GameStatus::OutOfTurns => break,
-            _ => {}
-        }
     }
 }
